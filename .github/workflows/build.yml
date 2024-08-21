@@ -17,6 +17,7 @@ jobs:
           ls -l /srv/cache
           sudo mkdir /srv/cache-overlay /srv/cache-work
           sudo mount -t overlay overlay -o lowerdir=/srv/cache,upperdir=/srv/cache-overlay,workdir=/srv/cache-work /srv/cache
+          sudo chmod ugo+rwx /srv/cache/src
           ls -l /srv/cache
           mkdir ~/.ptxdist
           echo 'PTXCONF_SETUP_SRCDIR="/srv/cache/src"' >> ~/.ptxdist/ptxdistrc-git
@@ -28,6 +29,9 @@ jobs:
         run: |
           ptxdist platform configs/platform-v7a/platformconfig
           ptxdist bsp-info
+      - name: Setup
+        run: |
+          sudo apt-get -y --no-install-recommends install python3-venv
       - name: Build Packages
         run: |
           ptxdist go -j

@@ -1,0 +1,34 @@
+name: build
+
+on:
+  push: {}
+  pull_request: {}
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    name: DistroKit Build
+    #runs-on: ${{ vars.BUILD_RUNS_ON || (github.repository == 'rauc/meta-rauc' && 'ptx-runner') || 'ubuntu-latest' }}
+    runs-on: [self-hosted, forrest, build]
+    timeout-minutes: 720
+    steps:
+      - name: Setup SSH Key for PTXdist Cache
+        run: |
+          echo "${{ secrets.PTXDIST_CACHE_KEY }}" >> ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup
+        run: |
+          ptxdist platform configs/platform-v7a/platformconfig
+          ptxdist bsp-info
+      - name: Build Packages
+        run: |
+          ptxdist go -q -j
+      - name: Build Images
+        run: |
+          ptxdist images -q -j
+      - name: Cache Data
+        if: ${{ always() }}
+        run: |
+          test ! -s ~/.ssh/id_ed25519 || rsync -rvx --ignore-existing build/downloads ptxdist-cache: || true

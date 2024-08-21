@@ -16,6 +16,12 @@ jobs:
         run: |
           echo "${{ secrets.PTXDIST_CACHE_KEY }}" >> ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
+      - name: Setup Overlay Mount for PTXdist Cache
+        run: |
+          ls -l /srv/cache
+          sudo mkdir /srv/cache-overlay /srv/cache-work
+          sudo mount -t overlay overlay -o lowerdir=/srv/cache,upperdir=/srv/cache-overlay,workdir=/srv/cache-work /srv/cache
+          ls -l /srv/cache
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup
@@ -24,11 +30,12 @@ jobs:
           ptxdist bsp-info
       - name: Build Packages
         run: |
-          ptxdist go -q -j
-      - name: Build Images
-        run: |
-          ptxdist images -q -j
+          ptxdist go -j
+      #- name: Build Images
+      #  run: |
+      #    ptxdist images -q -j
       - name: Cache Data
         if: ${{ always() }}
         run: |
-          test ! -s ~/.ssh/id_ed25519 || rsync -rvx --ignore-existing build/downloads ptxdist-cache: || true
+          ls -l /srv/cache-overlay
+          test ! -s ~/.ssh/id_ed25519 || rsync -rvx --ignore-existing /srv/cache ptxdist-cache: || true

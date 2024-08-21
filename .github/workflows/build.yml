@@ -12,10 +12,6 @@ jobs:
     runs-on: [self-hosted, forrest, build]
     timeout-minutes: 720
     steps:
-      - name: Setup SSH Key for PTXdist Cache
-        run: |
-          echo "${{ secrets.PTXDIST_CACHE_KEY }}" >> ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
       - name: Setup Overlay Mount for PTXdist Cache
         run: |
           ls -l /srv/cache
@@ -40,5 +36,7 @@ jobs:
       - name: Cache Data
         if: ${{ always() }}
         run: |
+          echo "${{ secrets.PTXDIST_CACHE_KEY }}" >> ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
           ls -l /srv/cache-overlay
           test ! -s ~/.ssh/id_ed25519 || rsync -rvx --ignore-existing /srv/cache ptxdist-cache: || true

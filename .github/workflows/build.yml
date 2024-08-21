@@ -20,6 +20,7 @@ jobs:
           ls -l /srv/cache
           mkdir ~/.ptxdist
           echo 'PTXCONF_SETUP_SRCDIR="/srv/cache/src"' >> ~/.ptxdist/ptxdistrc-git
+          echo 'PTXCONF_SETUP_PTXMIRROR="https://www.pengutronix.de/software/ptxdist/temporary-src"' >> ~/.ptxdist/ptxdistrc-git
           cp ~/.ptxdist/ptxdistrc-git ~/.ptxdist/ptxdistrc-2010.01
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,4 +40,4 @@ jobs:
           echo "${{ secrets.PTXDIST_CACHE_KEY }}" >> ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ls -l /srv/cache-overlay
-          test ! -s ~/.ssh/id_ed25519 || rsync -rvx --ignore-existing /srv/cache ptxdist-cache: || true
+          test ! -s ~/.ssh/id_ed25519 || rsync -rvx --ignore-existing /srv/cache/src ptxdist-cache: || true

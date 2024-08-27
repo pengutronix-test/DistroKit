@@ -10,7 +10,13 @@ jobs:
     name: DistroKit Build
     #runs-on: ${{ vars.BUILD_RUNS_ON || (github.repository == 'rauc/meta-rauc' && 'ptx-runner') || 'ubuntu-latest' }}
     runs-on: [self-hosted, forrest, build]
-    timeout-minutes: 720
+    timeout-minutes: 120
+    strategy:
+      matrix:
+        platform:
+          - v7a
+          - v8a
+          - x86_64
     steps:
       - name: Setup Overlay Mount for PTXdist Cache
         run: |
@@ -30,7 +36,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup
         run: |
-          ptxdist platform configs/platform-v7a/platformconfig
+          ptxdist platform configs/platform-${{ matrix.platform }}/platformconfig
           ls -l
           ptxdist print PTXDIST_VERSION_FULL | tee dev-pkg-base
           readlink -f selected_platformconfig | tee -a dev-pkg-base
@@ -45,7 +51,7 @@ jobs:
           ptxdist bsp-info
       - name: Build busybox
         run: |
-          ptxdist targetinstall busybox openssl rauc
+          ptxdist targetinstall -q -j busybox openssl rauc
       #- name: Build Packages
       #  run: |
       #    ptxdist go -j

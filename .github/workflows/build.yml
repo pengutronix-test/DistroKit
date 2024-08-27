@@ -17,6 +17,10 @@ jobs:
           - v7a
           - v8a
           - x86_64
+          - mips
+          - mipsel
+          - rpi1
+          - v7a_noneon
     steps:
       - name: Setup Overlay Mount for PTXdist Cache
         run: |
@@ -57,7 +61,7 @@ jobs:
           ptxdist targetinstall -q -j rauc
       - name: Build Packages
         run: |
-          ptxdist go -j
+          ptxdist go -q -j
       - name: Build Images
         run: |
           ptxdist images -q -j

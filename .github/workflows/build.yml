@@ -51,13 +51,19 @@ jobs:
           ptxdist bsp-info
       - name: Build busybox
         run: |
-          ptxdist targetinstall -q -j busybox openssl rauc
-      #- name: Build Packages
-      #  run: |
-      #    ptxdist go -j
-      #- name: Build Images
-      #  run: |
-      #    ptxdist images -q -j
+          ptxdist targetinstall -q -j busybox
+      - name: Build rauc
+        run: |
+          ptxdist targetinstall -q -j rauc
+      - name: Build Packages
+        run: |
+          ptxdist go -j
+      - name: Build Images
+        run: |
+          ptxdist images -q -j
+      - name: Show Images
+        run: |
+          ls -la platform-*/images
       - name: Cache Data
         if: ${{ always() }}
         run: |

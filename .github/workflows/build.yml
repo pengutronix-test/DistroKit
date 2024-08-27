@@ -23,18 +23,32 @@ jobs:
           echo 'PTXCONF_SETUP_SRCDIR="/srv/cache/src"' >> ~/.ptxdist/ptxdistrc-git
           echo 'PTXCONF_SETUP_PTXMIRROR="https://www.pengutronix.de/software/ptxdist/temporary-src"' >> ~/.ptxdist/ptxdistrc-git
           cp ~/.ptxdist/ptxdistrc-git ~/.ptxdist/ptxdistrc-2010.01
+      - name: Install Dependencies
+        run: |
+          sudo apt-get -y --no-install-recommends install python3-venv
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup
         run: |
           ptxdist platform configs/platform-v7a/platformconfig
+          ls -l
+          ptxdist print PTXDIST_VERSION_FULL | tee dev-pkg-base
+          readlink -f selected_platformconfig | tee -a dev-pkg-base
+          readlink -f selected_toolchain | tee -a dev-pkg-base
+          md5sum dev-pkg-base | cut -d ' ' -f 1 | tee dev-pkg-hash
+          echo "PTXCONF_PROJECT_CREATE_DEVPKGS=y" | tee -a configs/ptxconfig
+          echo "PTXCONF_PROJECT_USE_DEVPKGS=y" | tee -a configs/ptxconfig
+          echo "PTXCONF_PROJECT_DEVPKGDIR=\"/srv/cache/dev-pkgs/$(cat dev-pkg-hash)\"" | tee -a configs/ptxconfig
+          echo "PTXCONF_PROJECT_DEVMIRROR=\"\"" | tee -a configs/ptxconfig
+          ptxdist migrate
+          git diff
           ptxdist bsp-info
-      - name: Setup
+      - name: Build busybox
         run: |
-          sudo apt-get -y --no-install-recommends install python3-venv
-      - name: Build Packages
-        run: |
-          ptxdist go -j
+          ptxdist targetinstall busybox
+      #- name: Build Packages
+      #  run: |
+      #    ptxdist go -j
       #- name: Build Images
       #  run: |
       #    ptxdist images -q -j
@@ -45,3 +59,6 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ls -l /srv/cache-overlay
           test ! -s ~/.ssh/id_ed25519 || rsync -rvx --ignore-existing /srv/cache/src ptxdist-cache: || true
+          mkdir "$(cat dev-pkg-hash)"
+          mv -v platform-*/packages/*-dev.tar.gz "$(cat dev-pkg-hash)/"
+          test ! -s ~/.ssh/id_ed25519 || rsync -rvx --ignore-existing "$(cat dev-pkg-hash)" ptxdist-cache:dev-pkgs/ || true

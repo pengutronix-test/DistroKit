@@ -45,7 +45,7 @@ jobs:
           ptxdist bsp-info
       - name: Build busybox
         run: |
-          ptxdist targetinstall busybox
+          ptxdist targetinstall busybox openssl rauc
       #- name: Build Packages
       #  run: |
       #    ptxdist go -j
@@ -60,5 +60,5 @@ jobs:
           ls -l /srv/cache-overlay
           test ! -s ~/.ssh/id_ed25519 || rsync -rvx --ignore-existing /srv/cache/src ptxdist-cache: || true
           mkdir "$(cat dev-pkg-hash)"
-          mv -v platform-*/packages/*-dev.tar.gz "$(cat dev-pkg-hash)/"
+          mv -v platform-*/packages/*-dev.tar.gz "$(cat dev-pkg-hash)/" || true
           test ! -s ~/.ssh/id_ed25519 || rsync -rvx --ignore-existing "$(cat dev-pkg-hash)" ptxdist-cache:dev-pkgs/ || true

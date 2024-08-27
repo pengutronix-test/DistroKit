@@ -68,6 +68,10 @@ jobs:
       - name: Show Images
         run: |
           ls -la platform-*/images
+      - name: Compress Images
+        run: |
+          time zstdmt --rm platform-*/images/*.img || true
+          ls -la platform-*/images
       - name: Cache Data
         if: ${{ always() }}
         run: |
@@ -78,3 +82,10 @@ jobs:
           mkdir "$(cat dev-pkg-hash)"
           mv -v platform-*/packages/*-dev.tar.gz "$(cat dev-pkg-hash)/" || true
           test ! -s ~/.ssh/id_ed25519 || rsync -rvx --ignore-existing "$(cat dev-pkg-hash)" ptxdist-cache:dev-pkgs/ || true
+      - name: Upload RAUC Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: rauc-bundle-${{ matrix.platform }}
+          path: platform-*/images/update.raucb
+          compression-level: 0
+          retention-days: 30

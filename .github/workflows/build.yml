@@ -12,6 +12,8 @@ jobs:
     runs-on: [self-hosted, forrest, build]
     timeout-minutes: 120
     strategy:
+      max-parallel: 2
+      fail-fast: false
       matrix:
         platform:
           - v7a
@@ -81,6 +83,7 @@ jobs:
           test ! -s ~/.ssh/id_ed25519 || rsync -rvx --ignore-existing /srv/cache/src ptxdist-cache: || true
           mkdir "$(cat dev-pkg-hash)"
           mv -v platform-*/packages/*-dev.tar.gz "$(cat dev-pkg-hash)/" || true
+          rm -rf 
           test ! -s ~/.ssh/id_ed25519 || rsync -rvx --ignore-existing "$(cat dev-pkg-hash)" ptxdist-cache:dev-pkgs/ || true
       - name: Upload RAUC Bundle
         uses: actions/upload-artifact@v4
